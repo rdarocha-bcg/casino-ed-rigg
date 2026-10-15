@@ -37,6 +37,9 @@
     padding:14px 22px;border-radius:13px;background:linear-gradient(180deg,#ffd14d,var(--gold) 55%,#e1a700);box-shadow:0 6px 0 #9c7400,0 10px 20px #0007}
   #warn .go:active{transform:translateY(3px);box-shadow:0 3px 0 #9c7400}
   #warn small{color:#e79aa8;font-family:var(--fmono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;opacity:.8}
+  #warn .wwait{font-family:var(--fmono);color:var(--muted);font-size:.84rem;letter-spacing:.1em;margin-top:6px}
+  #warn .go{animation:fadeup .35s ease}
+  @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   /* ---------- MACHINE ---------- */
   .marquee{text-align:center;line-height:1}
   .marquee .sub{font-family:var(--fmono);font-size:.72rem;letter-spacing:.3em;color:var(--neon-2);text-transform:uppercase;margin-bottom:8px}
@@ -88,7 +91,8 @@
   <p>A QR code can lead <b>anywhere</b>: fake site, credential theft, malware.
      On a poster, a parking meter, a fake parcel, an email — <b>never scan blindly.</b></p>
   <small>Security awareness · Hack the Casino</small>
-  <button class="go" id="warnGo">Got it — enter the casino →</button>
+  <div id="warnWait" class="wwait">Continue in 3…</div>
+  <button class="go" id="warnGo" hidden>Got it — enter the casino →</button>
 </section>
 
 <!-- ========== MACHINE ========== -->
@@ -169,6 +173,14 @@
     document.getElementById("machine").hidden=false;
     document.getElementById("qrBtn").hidden=false;
   });
+  // the "enter" button only appears after a 3s forced read
+  (function(){
+    var btn=document.getElementById("warnGo"), w=document.getElementById("warnWait"), n=3;
+    var iv=setInterval(function(){ n--;
+      if(n>0){ w.textContent="Continue in "+n+"…"; }
+      else{ clearInterval(iv); w.hidden=true; btn.hidden=false; }
+    },1000);
+  })();
 
   // ---- machine ----
   var SYMS=["🍒","🔔","💎","7️⃣","🎰","🍋"], state=[0,2,4], locked=false;
