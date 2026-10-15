@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Classement — Casino d'Ed Rigg</title>
+<title>Leaderboard — Ed Rigg's Casino</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <style>
   :root{
@@ -41,14 +41,14 @@
 <body>
 <div class="board">
   <div class="tag">Hack the Casino</div>
-  <h1>Classement du casino</h1>
-  <div class="meta" id="meta">connexion au casino…</div>
+  <h1>Casino Leaderboard</h1>
+  <div class="meta" id="meta">connecting to the casino…</div>
   <ul class="rows" id="rows"></ul>
-  <div class="empty" id="empty" hidden>En attente des premiers à truquer la machine… 🎰</div>
+  <div class="empty" id="empty" hidden>Waiting for the first players to rig the machine… 🎰</div>
   <div class="legend">
-    <span class="badge j">Jackpot</span> gagné honnêtement ·
-    <span class="badge s">Super Jackpot</span> = <b>a triché</b> (et on adore) ·
-    <span class="badge h">La Maison</span> = Ed Rigg, à détrôner
+    <span class="badge j">Jackpot</span> won fair ·
+    <span class="badge s">Super Jackpot</span> = <b>cheated</b> (and we love it) ·
+    <span class="badge h">The House</span> = Ed Rigg, dethrone him
   </div>
 </div>
 
@@ -60,15 +60,15 @@
   "use strict";
   var rowsEl=document.getElementById("rows"), metaEl=document.getElementById("meta"), emptyEl=document.getElementById("empty");
 
-  // Ed Rigg : Super Jackpot permanent, en tête (La Maison a déjà triché).
+  // Ed Rigg: permanent Super Jackpot at the top (the House already cheated).
   var HOUSE={ pseudo:"Ed Rigg", type:"super jackpot", at:0, house:true };
 
   var DB=null;
   try{ firebase.initializeApp(window.FIREBASE_CONFIG); DB=firebase.database(); }
-  catch(e){ metaEl.textContent="Firebase non configuré — voir firebase-config.js"; }
+  catch(e){ metaEl.textContent="Firebase not configured — see firebase-config.js"; }
 
   function render(list){
-    // dedup par pseudo : on garde la 1re victoire ; super jackpot l'emporte sur jackpot
+    // dedup by nickname: keep the first win; super jackpot beats jackpot
     var by={};
     list.forEach(function(e){
       var k=e.pseudo.toLowerCase();
@@ -79,7 +79,7 @@
     players.sort(function(a,b){ return a.at-b.at; });
 
     var cracked=players.filter(function(p){return !p.house;}).length;
-    metaEl.textContent = cracked+" joueur"+(cracked>1?"s":"")+" ont cracké la machine · Ed Rigg garde la main 🎩";
+    metaEl.textContent = cracked+" player"+(cracked===1?"":"s")+" cracked the machine · Ed Rigg still runs the house 🎩";
     emptyEl.hidden = cracked>0;
 
     rowsEl.innerHTML="";
@@ -88,9 +88,9 @@
       li.className="row"+(pl.house?" house":(pl.type==="super jackpot"?" super":""));
       var rank=document.createElement("span"); rank.className="rank";
       rank.textContent = pl.house?"👑":(i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1));
-      var who=document.createElement("span"); who.className="who"; who.textContent=pl.pseudo; // textContent = anti-injection
+      var who=document.createElement("span"); who.className="who"; who.textContent=pl.pseudo; // textContent = injection-safe
       var b=document.createElement("span");
-      if(pl.house){ b.className="badge h"; b.textContent="🎩 La Maison"; }
+      if(pl.house){ b.className="badge h"; b.textContent="🎩 The House"; }
       else if(pl.type==="super jackpot"){ b.className="badge s"; b.textContent="🃏 Super Jackpot"; }
       else { b.className="badge j"; b.textContent="Jackpot"; }
       li.appendChild(rank); li.appendChild(who); li.appendChild(b);
@@ -98,14 +98,14 @@
     });
   }
 
-  render([HOUSE]); // affiche Ed Rigg d'emblée, même avant connexion
+  render([HOUSE]); // show Ed Rigg right away, even before connecting
 
   if(DB){
     DB.ref("jackpots").limitToLast(100).on("value", function(snap){
       var list=[HOUSE]; snap.forEach(function(c){ var v=c.val()||{};
         if(v && v.pseudo) list.push({pseudo:String(v.pseudo).slice(0,24),type:(v.type==="super jackpot"?"super jackpot":"jackpot"),at:+v.at||Date.now()}); });
       render(list);
-    }, function(err){ metaEl.textContent="connexion perdue — "+(err&&err.code||"erreur"); });
+    }, function(err){ metaEl.textContent="connection lost — "+(err&&err.code||"error"); });
   }
 })();
 </script>

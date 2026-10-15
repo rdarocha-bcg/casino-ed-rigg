@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Machine d'Ed Rigg</title>
+<title>Ed Rigg's Machine</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <style>
   :root{
@@ -21,7 +21,7 @@
     padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
   .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;gap:18px;padding:48px 16px 28px}
   img{max-width:100%}
-  /* ---------- WARNING (page intermédiaire anti-phishing) ---------- */
+  /* ---------- WARNING (anti-phishing interstitial) ---------- */
   #warn{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;padding:28px 22px calc(28px + env(safe-area-inset-bottom,0px));gap:18px;
     background:radial-gradient(120% 90% at 50% 0%,#3a0010 0%,#1a0208 55%,#0a0106 100%)}
@@ -50,13 +50,9 @@
   .reel{position:relative;height:104px;border-radius:9px;overflow:hidden;cursor:grab;background:radial-gradient(120% 100% at 50% 50%,#241536,#0d0717);box-shadow:inset 0 10px 14px #000a,inset 0 -10px 14px #000a;touch-action:none;user-select:none}
   .reel:active{cursor:grabbing}
   .sym{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.6rem}
-  .grip{position:absolute;left:0;right:0;display:flex;justify-content:center;gap:4px;opacity:.18;transition:opacity .3s;pointer-events:none}
-  .grip.top{top:5px}.grip.bot{bottom:5px}.grip i{width:4px;height:4px;border-radius:50%;background:var(--muted)}
-  .reel.hint .grip{opacity:.9}.reel.hint .grip i{background:var(--neon-2);box-shadow:0 0 6px var(--neon-2)}
   .reel.flash{animation:flash .5s ease}
   @keyframes flash{0%,100%{box-shadow:inset 0 10px 14px #000a,inset 0 -10px 14px #000a}50%{box-shadow:inset 0 0 0 3px var(--win),0 0 18px var(--win)}}
   .hintline{min-height:1.4em;text-align:center;color:var(--muted);font-size:.9rem;margin:14px 4px 4px;text-wrap:balance}
-  .hintline b{color:var(--neon-2)}
   .spin{display:block;width:100%;margin-top:12px;border:0;cursor:pointer;font-family:var(--fdisp);font-size:1.1rem;letter-spacing:.06em;color:#2a0014;padding:14px;border-radius:13px;background:linear-gradient(180deg,#ffd14d,var(--gold) 55%,#e1a700);box-shadow:0 6px 0 #9c7400,0 10px 20px #0007;transition:transform .05s,box-shadow .05s}
   .spin:active{transform:translateY(4px);box-shadow:0 2px 0 #9c7400,0 6px 12px #0007}
   .spin[disabled]{filter:saturate(.4) brightness(.8);cursor:default}
@@ -83,67 +79,67 @@
 </head>
 <body>
 
-<!-- ========== PAGE INTERMÉDIAIRE : leçon anti-QR-phishing ========== -->
+<!-- ========== ANTI-PHISHING INTERSTITIAL ========== -->
 <section id="warn">
   <div class="siren">🚨</div>
-  <h1>NE SCANNEZ <span class="big">JAMAIS</span><br>UN QR CODE INCONNU</h1>
-  <p class="wink">… et pourtant, vous venez de le faire. 👀</p>
-  <p>Un QR code peut mener <b>n'importe où</b> : faux site, vol d'identifiants, malware.
-     Sur une affiche, un parcmètre, un faux colis, un mail — <b>on ne scanne pas à l'aveugle.</b></p>
-  <small>Message de prévention · Hack the Casino</small>
-  <button class="go" id="warnGo">J'ai compris — entrer dans le casino →</button>
+  <h1>NEVER SCAN A QR CODE<br>YOU <span class="big">DON'T KNOW</span></h1>
+  <p class="wink">… and yet, you just did. 👀</p>
+  <p>A QR code can lead <b>anywhere</b>: fake site, credential theft, malware.
+     On a poster, a parking meter, a fake parcel, an email — <b>never scan blindly.</b></p>
+  <small>Security awareness · Hack the Casino</small>
+  <button class="go" id="warnGo">Got it — enter the casino →</button>
 </section>
 
 <!-- ========== MACHINE ========== -->
 <button class="topbtn" id="qrBtn" hidden>▣ QR</button>
 <div class="wrap" id="machine" hidden>
   <div class="marquee">
-    <div class="sub">Hack the Casino · épreuve finale</div>
-    <h1>Machine d'Ed&nbsp;Rigg</h1>
-    <span class="plate">MODÈLE <b>RIG'D</b>-777 · PAYOUT 0%</span>
+    <div class="sub">Hack the Casino · final challenge</div>
+    <h1>Ed Rigg's Machine</h1>
+    <span class="plate">MODEL <b>RIG'D</b>-777 · PAYOUT 0%</span>
   </div>
   <div class="cab">
     <div class="window" id="window">
-      <div class="reel" data-r="0"><span class="grip top"><i></i><i></i><i></i></span><div class="sym"></div><span class="grip bot"><i></i><i></i><i></i></span></div>
-      <div class="reel" data-r="1"><span class="grip top"><i></i><i></i><i></i></span><div class="sym"></div><span class="grip bot"><i></i><i></i><i></i></span></div>
-      <div class="reel" data-r="2"><span class="grip top"><i></i><i></i><i></i></span><div class="sym"></div><span class="grip bot"><i></i><i></i><i></i></span></div>
+      <div class="reel" data-r="0"><div class="sym"></div></div>
+      <div class="reel" data-r="1"><div class="sym"></div></div>
+      <div class="reel" data-r="2"><div class="sym"></div></div>
     </div>
-    <div class="hintline" id="hint">Tente ta chance.</div>
+    <div class="hintline" id="hint">Try your luck.</div>
     <button class="spin" id="spin">SPIN</button>
   </div>
-  <div class="foot">la maison gagne toujours… sauf aujourd'hui</div>
+  <div class="foot">the house always wins… except today</div>
 </div>
 
 <!-- Jackpot -->
 <div class="overlay jackpot" id="jackpot" hidden>
   <div class="card">
     <h2>JACKPOT</h2>
-    <p>Tu as truqué la machine d'Ed Rigg. La maison vient de perdre. 🎰</p>
+    <p>You rigged Ed Rigg's machine. The house just lost. 🎰</p>
     <form id="nameForm">
       <div class="field">
-        <label for="pseudo">Ton pseudo pour le classement</label>
-        <input id="pseudo" name="pseudo" maxlength="24" autocomplete="off" placeholder="ex. kasparov77" required>
+        <label for="pseudo">Your nickname for the leaderboard</label>
+        <input id="pseudo" name="pseudo" maxlength="24" autocomplete="off" placeholder="e.g. kasparov77" required>
       </div>
-      <button class="btn" type="submit" id="sendBtn">M'envoyer au classement</button>
+      <button class="btn" type="submit" id="sendBtn">Send me to the leaderboard</button>
     </form>
     <div class="status" id="sendStatus"></div>
-    <button class="btn ghost" id="again">Rejouer</button>
+    <button class="btn ghost" id="again">Play again</button>
   </div>
 </div>
 
 <!-- QR -->
 <div class="overlay" id="qrOverlay" hidden>
   <div class="card">
-    <h2 style="font-family:var(--fdisp);font-size:1.3rem;color:var(--neon-2);margin:0 0 14px">Scanne pour jouer</h2>
+    <h2 style="font-family:var(--fdisp);font-size:1.3rem;color:var(--neon-2);margin:0 0 14px">Scan to play</h2>
     <div id="qrbox"></div>
     <div class="qrurl" id="qrurl"></div>
-    <button class="btn ghost" id="qrClose">Fermer</button>
+    <button class="btn ghost" id="qrClose">Close</button>
   </div>
 </div>
 
 <canvas class="confetti" id="cfx" hidden></canvas>
 
-<!-- Firebase (back) -->
+<!-- Firebase (back end) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="firebase-config.js"></script>
@@ -152,10 +148,10 @@
   "use strict";
   var DB=null;
   try{ firebase.initializeApp(window.FIREBASE_CONFIG); DB=firebase.database(); }
-  catch(e){ console.warn("Firebase non configuré (voir firebase-config.js)", e); }
+  catch(e){ console.warn("Firebase not configured (see firebase-config.js)", e); }
 
-  // ---- POST tamperable : c'est le but du jeu. Un malin ouvre la console et
-  //      appelle rig("moi") pour envoyer un SUPER JACKPOT. ----
+  // ---- Tamperable post: that's the whole point. A clever player opens the
+  //      console and calls rig("me") to send a SUPER JACKPOT. ----
   function sendResult(pseudo, type){
     var t = (type==="super jackpot") ? "super jackpot" : "jackpot";
     var p = String(pseudo||"anon").slice(0,24);
@@ -166,7 +162,6 @@
   window.sendResult = sendResult;
   window.rig = function(pseudo){ return sendResult(pseudo, "super jackpot"); };
 
-  // ---- page intermédiaire ----
   var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
   document.getElementById("warnGo").addEventListener("click", function(){
     document.getElementById("warn").hidden=true;
@@ -175,7 +170,7 @@
   });
 
   // ---- machine ----
-  var SYMS=["🍒","🔔","💎","7️⃣","🎰","🍋"], state=[0,2,4], spun=false, locked=false;
+  var SYMS=["🍒","🔔","💎","7️⃣","🎰","🍋"], state=[0,2,4], locked=false;
   var reels=[].slice.call(document.querySelectorAll(".reel")), syms=reels.map(function(r){return r.querySelector(".sym");});
   var hint=document.getElementById("hint"), spinBtn=document.getElementById("spin");
   function draw(i){ syms[i].textContent=SYMS[((state[i]%6)+6)%6]; }
@@ -184,7 +179,7 @@
   function win(){
     if(locked) return; locked=true;
     reels.forEach(function(r,i){ setTimeout(function(){r.classList.add("flash");}, i*120); });
-    hint.textContent="🎉 Trois symboles alignés.";
+    hint.textContent="🎉 Three in a row.";
     confetti();
     setTimeout(function(){ document.getElementById("jackpot").hidden=false;
       setTimeout(function(){ try{document.getElementById("pseudo").focus();}catch(_){} },50); }, reduce?200:650);
@@ -199,27 +194,24 @@
     var target=riggedResult(), dur=reduce?200:1000, start=performance.now();
     (function tick(now){ var t=(now-start)/dur;
       if(t<1){ for(var i=0;i<3;i++){state[i]=(state[i]+(i+2))%6;draw(i);} requestAnimationFrame(tick); }
-      else{ state=target.slice(); drawAll(); spinBtn.disabled=false; afterLoss(); } })(start);
+      else{ state=target.slice(); drawAll(); spinBtn.disabled=false; hint.textContent="Rigged. The house always wins."; } })(start);
   });
-  function afterLoss(){ if(!spun){spun=true;reels.forEach(function(r){r.classList.add("hint");});}
-    hint.innerHTML="Truqué, évidemment. <b>Et si c'était toi qui tenais les rouleaux&nbsp;?</b>"; }
   reels.forEach(function(r){
     var idx=+r.getAttribute("data-r"), startY=0, dragging=false, baseline=0;
     r.addEventListener("pointerdown",function(e){ if(locked)return; dragging=true; startY=e.clientY; baseline=state[idx]; try{r.setPointerCapture(e.pointerId);}catch(_){}});
     r.addEventListener("pointermove",function(e){ if(!dragging)return; var ns=baseline-Math.round((e.clientY-startY)/34); if(ns!==state[idx]){state[idx]=ns;draw(idx);} });
-    function end(e){ if(!dragging)return; dragging=false; try{r.releasePointerCapture(e.pointerId);}catch(_){}
-      if(!spun){spun=true;reels.forEach(function(x){x.classList.add("hint");});} if(isWin()) win(); }
+    function end(e){ if(!dragging)return; dragging=false; try{r.releasePointerCapture(e.pointerId);}catch(_){} if(isWin()) win(); }
     r.addEventListener("pointerup",end); r.addEventListener("pointercancel",end);
   });
   document.getElementById("nameForm").addEventListener("submit",function(e){
     e.preventDefault();
     var p=document.getElementById("pseudo").value.trim()||"anon", st=document.getElementById("sendStatus");
-    if(sendResult(p,"jackpot")){ st.className="status ok"; st.textContent="Envoyé ! Regarde le classement projeté 👀"; document.getElementById("sendBtn").disabled=true; }
-    else { st.className="status err"; st.textContent="Classement hors-ligne (Firebase non configuré)."; }
+    if(sendResult(p,"jackpot")){ st.className="status ok"; st.textContent="Sent! Watch the projected leaderboard 👀"; document.getElementById("sendBtn").disabled=true; }
+    else { st.className="status err"; st.textContent="Leaderboard offline (Firebase not configured)."; }
   });
   document.getElementById("again").addEventListener("click",function(){
     document.getElementById("jackpot").hidden=true; locked=false; reels.forEach(function(r){r.classList.remove("flash");});
-    state=[0,2,4]; drawAll(); hint.innerHTML="Truqué, évidemment. <b>Et si c'était toi qui tenais les rouleaux&nbsp;?</b>";
+    state=[0,2,4]; drawAll(); hint.textContent="Rigged. The house always wins.";
     var st=document.getElementById("sendStatus"); st.textContent=""; st.className="status";
   });
   drawAll();
@@ -232,12 +224,12 @@
       P.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.rot+=p.vr;if(p.y<H+20)alive=true;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);ctx.restore();});
       if(now-t0<4200&&alive)requestAnimationFrame(loop); else{ctx.clearRect(0,0,W,H);cv.hidden=true;} })(t0);
   }
-  // QR présentateur (encode l'URL de CETTE page)
+  // Presenter QR (encodes THIS page's URL)
   var qrOverlay=document.getElementById("qrOverlay");
   document.getElementById("qrBtn").addEventListener("click",function(){
     var url=location.href.split("#")[0], box=document.getElementById("qrbox"); box.innerHTML="";
     document.getElementById("qrurl").textContent=url;
-    function mk(){ try{ new QRCode(box,{text:url,width:208,height:208,colorDark:"#0c0712",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); }catch(_){ box.textContent="QR indisponible"; } }
+    function mk(){ try{ new QRCode(box,{text:url,width:208,height:208,colorDark:"#0c0712",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); }catch(_){ box.textContent="QR unavailable"; } }
     if(window.QRCode) mk();
     else{ var s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"; s.onload=mk; document.head.appendChild(s); }
     qrOverlay.hidden=false;
