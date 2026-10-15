@@ -158,8 +158,7 @@
     var t = (type==="super jackpot") ? "super jackpot" : "jackpot";
     var p = String(pseudo||"anon").slice(0,24);
     if(!DB) return false;
-    DB.ref("jackpots").push({ pseudo:p, type:t, at: Date.now() });
-    return true;
+    return DB.ref("jackpots").push({ pseudo:p, type:t, at: Date.now() }); // thenable ref (truthy)
   }
   window.sendResult = sendResult;
   window.rig = function(pseudo){ return sendResult(pseudo, "super jackpot"); };
@@ -220,8 +219,14 @@
   document.getElementById("nameForm").addEventListener("submit",function(e){
     e.preventDefault();
     var p=document.getElementById("pseudo").value.trim()||"anon", st=document.getElementById("sendStatus");
-    if(sendResult(p,"jackpot")){ st.className="status ok"; st.textContent="Sent! Watch the projected leaderboard 👀"; document.getElementById("sendBtn").disabled=true; }
-    else { st.className="status err"; st.textContent="Leaderboard offline (Firebase not configured)."; }
+    var ref=sendResult(p,"jackpot");
+    if(ref){
+      st.className="status ok"; st.textContent="Sent! Opening the leaderboard…";
+      document.getElementById("sendBtn").disabled=true;
+      var go=function(){ location.href="board.html"; };
+      if(ref.then) ref.then(go, go);   // redirige une fois l'écriture confirmée (ou en échec)
+      setTimeout(go, 1500);            // filet de sécurité
+    } else { st.className="status err"; st.textContent="Leaderboard offline (Firebase not configured)."; }
   });
   document.getElementById("again").addEventListener("click",function(){
     document.getElementById("jackpot").hidden=true; locked=false; reels.forEach(function(r){r.classList.remove("flash");});
