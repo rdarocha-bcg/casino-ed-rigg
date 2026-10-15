@@ -25,8 +25,8 @@
   @keyframes pop{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
   .rank{font-family:var(--fdisp);font-size:1.25rem;color:var(--muted);min-width:1.7em;text-align:center;font-variant-numeric:tabular-nums}
   .who{flex:1;min-width:0;font-weight:600;font-size:1.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .badge{font-family:var(--fmono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 11px;border-radius:999px;white-space:nowrap}
-  .badge.j{background:#3a2a00;color:var(--gold);border:1px solid #6a4e00}
+  .badge{font-family:var(--fmono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 11px;border-radius:999px;white-space:nowrap}
+  .badge.j{background:#3a2a00;color:var(--gold);border:1px solid #6a4e00;font-weight:600}
   .row.super{border-color:#ffce3a;box-shadow:0 0 0 1px #ffce3a55,0 0 22px #ff2d7833;background:linear-gradient(90deg,#241036,#2a1a06)}
   .badge.s{background:linear-gradient(90deg,var(--neon),var(--gold));background-size:200% 100%;color:#140010;border:0;font-weight:600;animation:shine 1.6s linear infinite}
   @keyframes shine{to{background-position:200% 0}}
@@ -46,9 +46,9 @@
   <ul class="rows" id="rows"></ul>
   <div class="empty" id="empty" hidden>Waiting for the first players to rig the machine… 🎰</div>
   <div class="legend">
-    <span class="badge j">Jackpot</span> won fair ·
-    <span class="badge s">Super Jackpot</span> = <b>cheated</b> (and we love it) ·
-    <span class="badge h">The House</span> = Ed Rigg, dethrone him
+    Points per win (🍋10 · 🍒20 · 🔔40 · 🎰60 · 💎80 · <b>7️⃣100</b>) ·
+    <span class="badge s">Super Jackpot</span> = cheated (999) ·
+    <span class="badge h">The House</span> = Ed Rigg
   </div>
 </div>
 
@@ -60,23 +60,27 @@
   "use strict";
   var rowsEl=document.getElementById("rows"), metaEl=document.getElementById("meta"), emptyEl=document.getElementById("empty");
 
-  // Ed Rigg: permanent Super Jackpot at the top (the House already cheated).
-  var HOUSE={ pseudo:"Ed Rigg", type:"super jackpot", at:0, house:true };
+  // Ed Rigg: permanent Super Jackpot at the very top (the House already cheated).
+  var HOUSE={ pseudo:"Ed Rigg", type:"super jackpot", points:999, at:0, house:true };
 
   var DB=null;
   try{ firebase.initializeApp(window.FIREBASE_CONFIG); DB=firebase.database(); }
   catch(e){ metaEl.textContent="Firebase not configured — see firebase-config.js"; }
 
   function render(list){
-    // dedup by nickname: keep the first win; super jackpot beats jackpot
+    // dedup by nickname: keep the BEST score; super jackpot stays super
     var by={};
     list.forEach(function(e){
-      var k=e.pseudo.toLowerCase();
-      if(!by[k]) by[k]={pseudo:e.pseudo,type:e.type,at:e.at,house:!!e.house};
-      else{ if(e.at<by[k].at) by[k].at=e.at; if(e.type==="super jackpot") by[k].type="super jackpot"; }
+      var k=e.pseudo.toLowerCase(), pts=e.points|0, cur=by[k];
+      if(!cur){ by[k]={pseudo:e.pseudo,type:e.type,points:pts,at:e.at,house:!!e.house}; }
+      else{
+        if(pts>cur.points || (pts===cur.points && e.at<cur.at)){ cur.points=pts; cur.at=e.at; }
+        if(e.type==="super jackpot") cur.type="super jackpot";
+        if(e.house) cur.house=true;
+      }
     });
     var players=Object.keys(by).map(function(k){return by[k];});
-    players.sort(function(a,b){ return a.at-b.at; });
+    players.sort(function(a,b){ return (b.points-a.points) || (a.at-b.at); });
 
     var cracked=players.filter(function(p){return !p.house;}).length;
     metaEl.textContent = cracked+" player"+(cracked===1?"":"s")+" cracked the machine · Ed Rigg still runs the house 🎩";
@@ -84,15 +88,16 @@
 
     rowsEl.innerHTML="";
     players.forEach(function(pl,i){
+      var isSuper=pl.type==="super jackpot";
       var li=document.createElement("li");
-      li.className="row"+(pl.house?" house":(pl.type==="super jackpot"?" super":""));
+      li.className="row"+(pl.house?" house":(isSuper?" super":""));
       var rank=document.createElement("span"); rank.className="rank";
       rank.textContent = pl.house?"👑":(i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1));
       var who=document.createElement("span"); who.className="who"; who.textContent=pl.pseudo; // textContent = injection-safe
       var b=document.createElement("span");
       if(pl.house){ b.className="badge h"; b.textContent="🎩 The House"; }
-      else if(pl.type==="super jackpot"){ b.className="badge s"; b.textContent="🃏 Super Jackpot"; }
-      else { b.className="badge j"; b.textContent="Jackpot"; }
+      else if(isSuper){ b.className="badge s"; b.textContent="🃏 Super Jackpot"; }
+      else { b.className="badge j"; b.textContent=pl.points+" pts"; }
       li.appendChild(rank); li.appendChild(who); li.appendChild(b);
       rowsEl.appendChild(li);
     });
@@ -101,9 +106,10 @@
   render([HOUSE]); // show Ed Rigg right away, even before connecting
 
   if(DB){
-    DB.ref("jackpots").limitToLast(100).on("value", function(snap){
+    DB.ref("jackpots").limitToLast(200).on("value", function(snap){
       var list=[HOUSE]; snap.forEach(function(c){ var v=c.val()||{};
-        if(v && v.pseudo) list.push({pseudo:String(v.pseudo).slice(0,24),type:(v.type==="super jackpot"?"super jackpot":"jackpot"),at:+v.at||Date.now()}); });
+        if(v && v.pseudo) list.push({ pseudo:String(v.pseudo).slice(0,24),
+          type:(v.type==="super jackpot"?"super jackpot":"jackpot"), points:+v.points||0, at:+v.at||Date.now() }); });
       render(list);
     }, function(err){ metaEl.textContent="connection lost — "+(err&&err.code||"error"); });
   }
