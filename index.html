@@ -183,9 +183,10 @@
   };
   var reels=[].slice.call(document.querySelectorAll(".reel")), syms=reels.map(function(r){return r.querySelector(".sym");});
   var hint=document.getElementById("hint"), spinBtn=document.getElementById("spin");
-  function draw(i){ syms[i].textContent=SYMS[((state[i]%6)+6)%6]; }
+  function ni(i){ return ((state[i]%6)+6)%6; }                 // index normalisé (0..5)
+  function draw(i){ syms[i].textContent=SYMS[ni(i)]; }
   function drawAll(){ for(var i=0;i<3;i++) draw(i); }
-  function isWin(){ return state[0]%6===state[1]%6 && state[1]%6===state[2]%6; }
+  function isWin(){ return ni(0)===ni(1) && ni(1)===ni(2); }   // compare ce qui est AFFICHÉ
   function win(){
     if(locked) return; locked=true;
     reels.forEach(function(r,i){ setTimeout(function(){r.classList.add("flash");}, i*120); });
