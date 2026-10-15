@@ -60,8 +60,9 @@
   .topbtn{position:fixed;top:0;right:0;margin:calc(10px + env(safe-area-inset-top,0px)) 12px 0 0;z-index:5;font-family:var(--fmono);font-size:.68rem;letter-spacing:.12em;color:var(--fg);background:#ffffff14;border:1px solid var(--panel-edge);border-radius:10px;padding:7px 11px;cursor:pointer}
   .overlay{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:24px;background:#07040cdd;backdrop-filter:blur(6px)}
   .card{width:100%;max-width:340px;text-align:center;background:linear-gradient(180deg,#1d1030,#130a22);border:1px solid var(--panel-edge);border-radius:20px;padding:26px 22px;box-shadow:0 24px 60px #000a}
-  .jackpot h2{font-family:var(--fdisp);font-size:2.2rem;margin:0 0 6px;color:var(--gold);text-shadow:0 0 10px var(--gold),0 0 34px #ffce3a66}
-  .jackpot p{color:var(--fg);margin:.4rem 0 0;line-height:1.5}
+  .jackpot h2{font-family:var(--fdisp);font-size:2.2rem;margin:0 0 2px;color:var(--gold);text-shadow:0 0 10px var(--gold),0 0 34px #ffce3a66}
+  .jackpot .triple{font-size:2.1rem;letter-spacing:.12em;margin:2px 0 4px}
+  .jackpot p{color:var(--fg);margin:.4rem 0 0;line-height:1.5;min-height:3em}
   .field{margin-top:16px;display:flex;flex-direction:column;gap:8px;text-align:left}
   .field label{font-size:.78rem;color:var(--muted)}
   .field input{font-family:var(--fbody);font-size:1rem;color:var(--fg);background:#0e0718;border:1px solid var(--panel-edge);border-radius:11px;padding:12px 13px}
@@ -114,7 +115,8 @@
 <div class="overlay jackpot" id="jackpot" hidden>
   <div class="card">
     <h2>JACKPOT</h2>
-    <p>You rigged Ed Rigg's machine. The house just lost. 🎰</p>
+    <div class="triple" id="jpTriple">🎰 🎰 🎰</div>
+    <p id="jpMsg">You rigged Ed Rigg's machine. The house just lost.</p>
     <form id="nameForm">
       <div class="field">
         <label for="pseudo">Your nickname for the leaderboard</label>
@@ -171,6 +173,14 @@
 
   // ---- machine ----
   var SYMS=["🍒","🔔","💎","7️⃣","🎰","🍋"], state=[0,2,4], locked=false;
+  var WINMSG={
+    "7️⃣":"TRIPLE SEVEN — the big one. You just broke the bank.",
+    "🍒":"Three cherries! The classic. Sweet… and completely rigged by you.",
+    "💎":"Diamonds! High roller. Ed Rigg is sweating.",
+    "🔔":"Bells! Ring it — the house is actually paying out for once.",
+    "🎰":"A full house of slots. You rigged the rig itself. Meta.",
+    "🍋":"Three lemons! Usually the worst hand in gambling — here it still beats Ed Rigg."
+  };
   var reels=[].slice.call(document.querySelectorAll(".reel")), syms=reels.map(function(r){return r.querySelector(".sym");});
   var hint=document.getElementById("hint"), spinBtn=document.getElementById("spin");
   function draw(i){ syms[i].textContent=SYMS[((state[i]%6)+6)%6]; }
@@ -180,6 +190,9 @@
     if(locked) return; locked=true;
     reels.forEach(function(r,i){ setTimeout(function(){r.classList.add("flash");}, i*120); });
     hint.textContent="🎉 Three in a row.";
+    var sym=SYMS[((state[0]%6)+6)%6];
+    document.getElementById("jpTriple").textContent = sym+"  "+sym+"  "+sym;
+    document.getElementById("jpMsg").textContent = WINMSG[sym] || "You rigged Ed Rigg's machine. The house just lost.";
     confetti();
     setTimeout(function(){ document.getElementById("jackpot").hidden=false;
       setTimeout(function(){ try{document.getElementById("pseudo").focus();}catch(_){} },50); }, reduce?200:650);
