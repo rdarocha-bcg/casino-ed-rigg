@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Machine d'Ed Rigg</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#0c0712;--bg2:#150d20;--panel:#1c1130;--panel-edge:#3a2460;
+    --fg:#f6ecff;--muted:#a88fc9;--neon:#ff2d78;--neon-2:#22d3ee;--gold:#ffce3a;--win:#4ade80;--reel:#120a1c;--danger:#ff3b5c;
+    color-scheme:dark;
+    --fdisp:"Bungee","Arial Black",system-ui,sans-serif;
+    --fbody:"Rubik",system-ui,-apple-system,sans-serif;
+    --fmono:"DM Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:radial-gradient(120% 80% at 50% -10%,#2a0f3f 0%,var(--bg2) 45%,var(--bg) 100%);
+    color:var(--fg);font-family:var(--fbody);-webkit-tap-highlight-color:transparent;overflow-x:hidden;
+    padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+  .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;gap:18px;padding:48px 16px 28px}
+  img{max-width:100%}
+  /* ---------- WARNING (page intermédiaire anti-phishing) ---------- */
+  #warn{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:28px 22px calc(28px + env(safe-area-inset-bottom,0px));gap:18px;
+    background:radial-gradient(120% 90% at 50% 0%,#3a0010 0%,#1a0208 55%,#0a0106 100%)}
+  #warn .siren{font-size:3.4rem;animation:blink 1s steps(2,end) infinite}
+  @keyframes blink{50%{opacity:.25}}
+  #warn h1{font-family:var(--fdisp);font-size:clamp(1.7rem,8vw,2.8rem);margin:0;color:#fff;line-height:1.05;
+    text-shadow:0 0 8px var(--danger),0 0 28px #ff3b5c88;text-wrap:balance}
+  #warn .big{color:var(--danger)}
+  #warn p{max-width:30rem;margin:0;color:#ffd9df;line-height:1.55;font-size:1.02rem}
+  #warn p b{color:#fff}
+  #warn .wink{font-family:var(--fmono);color:var(--neon-2);font-size:.92rem;letter-spacing:.02em}
+  #warn .go{margin-top:6px;border:0;cursor:pointer;font-family:var(--fdisp);font-size:1rem;letter-spacing:.04em;color:#2a0014;
+    padding:14px 22px;border-radius:13px;background:linear-gradient(180deg,#ffd14d,var(--gold) 55%,#e1a700);box-shadow:0 6px 0 #9c7400,0 10px 20px #0007}
+  #warn .go:active{transform:translateY(3px);box-shadow:0 3px 0 #9c7400}
+  #warn small{color:#e79aa8;font-family:var(--fmono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;opacity:.8}
+  /* ---------- MACHINE ---------- */
+  .marquee{text-align:center;line-height:1}
+  .marquee .sub{font-family:var(--fmono);font-size:.72rem;letter-spacing:.3em;color:var(--neon-2);text-transform:uppercase;margin-bottom:8px}
+  .marquee h1{font-family:var(--fdisp);font-size:clamp(1.9rem,8vw,2.9rem);margin:0;color:#fff;text-shadow:0 0 6px var(--neon),0 0 22px var(--neon),0 0 44px #ff2d7855;text-wrap:balance}
+  .plate{display:inline-block;margin-top:9px;font-family:var(--fmono);font-size:.68rem;letter-spacing:.3em;color:var(--muted);border:1px solid var(--panel-edge);border-radius:999px;padding:4px 12px}
+  .plate b{color:var(--gold)}
+  .cab{width:100%;max-width:360px;background:linear-gradient(180deg,var(--panel),#160c26);border:1px solid var(--panel-edge);border-radius:22px;box-shadow:0 0 0 1px #00000040,0 20px 50px #00000066,inset 0 1px 0 #ffffff14;padding:16px 16px 18px}
+  .window{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:var(--reel);border-radius:14px;padding:12px;box-shadow:inset 0 0 0 2px #000,inset 0 0 36px #000a}
+  .window::before{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;background:linear-gradient(180deg,#ffffff1f,transparent 22%,transparent 78%,#0008)}
+  .window::after{content:"";position:absolute;left:8px;right:8px;top:50%;height:2px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:.55;pointer-events:none}
+  .reel{position:relative;height:104px;border-radius:9px;overflow:hidden;cursor:grab;background:radial-gradient(120% 100% at 50% 50%,#241536,#0d0717);box-shadow:inset 0 10px 14px #000a,inset 0 -10px 14px #000a;touch-action:none;user-select:none}
+  .reel:active{cursor:grabbing}
+  .sym{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.6rem}
+  .grip{position:absolute;left:0;right:0;display:flex;justify-content:center;gap:4px;opacity:.18;transition:opacity .3s;pointer-events:none}
+  .grip.top{top:5px}.grip.bot{bottom:5px}.grip i{width:4px;height:4px;border-radius:50%;background:var(--muted)}
+  .reel.hint .grip{opacity:.9}.reel.hint .grip i{background:var(--neon-2);box-shadow:0 0 6px var(--neon-2)}
+  .reel.flash{animation:flash .5s ease}
+  @keyframes flash{0%,100%{box-shadow:inset 0 10px 14px #000a,inset 0 -10px 14px #000a}50%{box-shadow:inset 0 0 0 3px var(--win),0 0 18px var(--win)}}
+  .hintline{min-height:1.4em;text-align:center;color:var(--muted);font-size:.9rem;margin:14px 4px 4px;text-wrap:balance}
+  .hintline b{color:var(--neon-2)}
+  .spin{display:block;width:100%;margin-top:12px;border:0;cursor:pointer;font-family:var(--fdisp);font-size:1.1rem;letter-spacing:.06em;color:#2a0014;padding:14px;border-radius:13px;background:linear-gradient(180deg,#ffd14d,var(--gold) 55%,#e1a700);box-shadow:0 6px 0 #9c7400,0 10px 20px #0007;transition:transform .05s,box-shadow .05s}
+  .spin:active{transform:translateY(4px);box-shadow:0 2px 0 #9c7400,0 6px 12px #0007}
+  .spin[disabled]{filter:saturate(.4) brightness(.8);cursor:default}
+  .foot{color:var(--muted);font-family:var(--fmono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;opacity:.7;text-align:center}
+  .topbtn{position:fixed;top:0;right:0;margin:calc(10px + env(safe-area-inset-top,0px)) 12px 0 0;z-index:5;font-family:var(--fmono);font-size:.68rem;letter-spacing:.12em;color:var(--fg);background:#ffffff14;border:1px solid var(--panel-edge);border-radius:10px;padding:7px 11px;cursor:pointer}
+  .overlay{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:24px;background:#07040cdd;backdrop-filter:blur(6px)}
+  .card{width:100%;max-width:340px;text-align:center;background:linear-gradient(180deg,#1d1030,#130a22);border:1px solid var(--panel-edge);border-radius:20px;padding:26px 22px;box-shadow:0 24px 60px #000a}
+  .jackpot h2{font-family:var(--fdisp);font-size:2.2rem;margin:0 0 6px;color:var(--gold);text-shadow:0 0 10px var(--gold),0 0 34px #ffce3a66}
+  .jackpot p{color:var(--fg);margin:.4rem 0 0;line-height:1.5}
+  .field{margin-top:16px;display:flex;flex-direction:column;gap:8px;text-align:left}
+  .field label{font-size:.78rem;color:var(--muted)}
+  .field input{font-family:var(--fbody);font-size:1rem;color:var(--fg);background:#0e0718;border:1px solid var(--panel-edge);border-radius:11px;padding:12px 13px}
+  .field input:focus{outline:2px solid var(--neon-2);outline-offset:1px}
+  .btn{margin-top:14px;border:0;cursor:pointer;font-family:var(--fbody);font-weight:600;color:#1a0010;background:linear-gradient(180deg,#ffd14d,var(--gold));border-radius:11px;padding:12px 16px;width:100%}
+  .btn.ghost{color:var(--fg);background:#ffffff16;border:1px solid var(--panel-edge);margin-top:10px}
+  .status{margin-top:12px;font-size:.82rem;color:var(--muted);min-height:1.2em}
+  .status.ok{color:var(--win)} .status.err{color:var(--danger)}
+  #qrbox{background:#fff;border-radius:14px;padding:16px;display:inline-block;min-width:200px;min-height:200px}
+  .qrurl{font-family:var(--fmono);font-size:.72rem;word-break:break-all;color:var(--muted);margin-top:12px}
+  canvas.confetti{position:fixed;inset:0;z-index:20;pointer-events:none}
+  [hidden]{display:none!important}
+  @media (prefers-reduced-motion:reduce){.reel.flash,#warn .siren{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- ========== PAGE INTERMÉDIAIRE : leçon anti-QR-phishing ========== -->
+<section id="warn">
+  <div class="siren">🚨</div>
+  <h1>NE SCANNEZ <span class="big">JAMAIS</span><br>UN QR CODE INCONNU</h1>
+  <p class="wink">… et pourtant, vous venez de le faire. 👀</p>
+  <p>Un QR code peut mener <b>n'importe où</b> : faux site, vol d'identifiants, malware.
+     Sur une affiche, un parcmètre, un faux colis, un mail — <b>on ne scanne pas à l'aveugle.</b></p>
+  <small>Message de prévention · Hack the Casino</small>
+  <button class="go" id="warnGo">J'ai compris — entrer dans le casino →</button>
+</section>
+
+<!-- ========== MACHINE ========== -->
+<button class="topbtn" id="qrBtn" hidden>▣ QR</button>
+<div class="wrap" id="machine" hidden>
+  <div class="marquee">
+    <div class="sub">Hack the Casino · épreuve finale</div>
+    <h1>Machine d'Ed&nbsp;Rigg</h1>
+    <span class="plate">MODÈLE <b>RIG'D</b>-777 · PAYOUT 0%</span>
+  </div>
+  <div class="cab">
+    <div class="window" id="window">
+      <div class="reel" data-r="0"><span class="grip top"><i></i><i></i><i></i></span><div class="sym"></div><span class="grip bot"><i></i><i></i><i></i></span></div>
+      <div class="reel" data-r="1"><span class="grip top"><i></i><i></i><i></i></span><div class="sym"></div><span class="grip bot"><i></i><i></i><i></i></span></div>
+      <div class="reel" data-r="2"><span class="grip top"><i></i><i></i><i></i></span><div class="sym"></div><span class="grip bot"><i></i><i></i><i></i></span></div>
+    </div>
+    <div class="hintline" id="hint">Tente ta chance.</div>
+    <button class="spin" id="spin">SPIN</button>
+  </div>
+  <div class="foot">la maison gagne toujours… sauf aujourd'hui</div>
+</div>
+
+<!-- Jackpot -->
+<div class="overlay jackpot" id="jackpot" hidden>
+  <div class="card">
+    <h2>JACKPOT</h2>
+    <p>Tu as truqué la machine d'Ed Rigg. La maison vient de perdre. 🎰</p>
+    <form id="nameForm">
+      <div class="field">
+        <label for="pseudo">Ton pseudo pour le classement</label>
+        <input id="pseudo" name="pseudo" maxlength="24" autocomplete="off" placeholder="ex. kasparov77" required>
+      </div>
+      <button class="btn" type="submit" id="sendBtn">M'envoyer au classement</button>
+    </form>
+    <div class="status" id="sendStatus"></div>
+    <button class="btn ghost" id="again">Rejouer</button>
+  </div>
+</div>
+
+<!-- QR -->
+<div class="overlay" id="qrOverlay" hidden>
+  <div class="card">
+    <h2 style="font-family:var(--fdisp);font-size:1.3rem;color:var(--neon-2);margin:0 0 14px">Scanne pour jouer</h2>
+    <div id="qrbox"></div>
+    <div class="qrurl" id="qrurl"></div>
+    <button class="btn ghost" id="qrClose">Fermer</button>
+  </div>
+</div>
+
+<canvas class="confetti" id="cfx" hidden></canvas>
+
+<!-- Firebase (back) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+  "use strict";
+  var DB=null;
+  try{ firebase.initializeApp(window.FIREBASE_CONFIG); DB=firebase.database(); }
+  catch(e){ console.warn("Firebase non configuré (voir firebase-config.js)", e); }
+
+  // ---- POST tamperable : c'est le but du jeu. Un malin ouvre la console et
+  //      appelle rig("moi") pour envoyer un SUPER JACKPOT. ----
+  function sendResult(pseudo, type){
+    var t = (type==="super jackpot") ? "super jackpot" : "jackpot";
+    var p = String(pseudo||"anon").slice(0,24);
+    if(!DB) return false;
+    DB.ref("jackpots").push({ pseudo:p, type:t, at: Date.now() });
+    return true;
+  }
+  window.sendResult = sendResult;
+  window.rig = function(pseudo){ return sendResult(pseudo, "super jackpot"); };
+
+  // ---- page intermédiaire ----
+  var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  document.getElementById("warnGo").addEventListener("click", function(){
+    document.getElementById("warn").hidden=true;
+    document.getElementById("machine").hidden=false;
+    document.getElementById("qrBtn").hidden=false;
+  });
+
+  // ---- machine ----
+  var SYMS=["🍒","🔔","💎","7️⃣","🎰","🍋"], state=[0,2,4], spun=false, locked=false;
+  var reels=[].slice.call(document.querySelectorAll(".reel")), syms=reels.map(function(r){return r.querySelector(".sym");});
+  var hint=document.getElementById("hint"), spinBtn=document.getElementById("spin");
+  function draw(i){ syms[i].textContent=SYMS[((state[i]%6)+6)%6]; }
+  function drawAll(){ for(var i=0;i<3;i++) draw(i); }
+  function isWin(){ return state[0]%6===state[1]%6 && state[1]%6===state[2]%6; }
+  function win(){
+    if(locked) return; locked=true;
+    reels.forEach(function(r,i){ setTimeout(function(){r.classList.add("flash");}, i*120); });
+    hint.textContent="🎉 Trois symboles alignés.";
+    confetti();
+    setTimeout(function(){ document.getElementById("jackpot").hidden=false;
+      setTimeout(function(){ try{document.getElementById("pseudo").focus();}catch(_){} },50); }, reduce?200:650);
+  }
+  function riggedResult(){
+    var a=Math.floor(Math.random()*6), r=[a,(a+1)%6,(a+(Math.random()<.5?2:3))%6];
+    for(var i=r.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=r[i];r[i]=r[j];r[j]=t;}
+    if(r[0]===r[1]&&r[1]===r[2]) r[2]=(r[2]+1)%6; return r;
+  }
+  spinBtn.addEventListener("click",function(){
+    if(locked) return; spinBtn.disabled=true; hint.textContent="…";
+    var target=riggedResult(), dur=reduce?200:1000, start=performance.now();
+    (function tick(now){ var t=(now-start)/dur;
+      if(t<1){ for(var i=0;i<3;i++){state[i]=(state[i]+(i+2))%6;draw(i);} requestAnimationFrame(tick); }
+      else{ state=target.slice(); drawAll(); spinBtn.disabled=false; afterLoss(); } })(start);
+  });
+  function afterLoss(){ if(!spun){spun=true;reels.forEach(function(r){r.classList.add("hint");});}
+    hint.innerHTML="Truqué, évidemment. <b>Et si c'était toi qui tenais les rouleaux&nbsp;?</b>"; }
+  reels.forEach(function(r){
+    var idx=+r.getAttribute("data-r"), startY=0, dragging=false, baseline=0;
+    r.addEventListener("pointerdown",function(e){ if(locked)return; dragging=true; startY=e.clientY; baseline=state[idx]; try{r.setPointerCapture(e.pointerId);}catch(_){}});
+    r.addEventListener("pointermove",function(e){ if(!dragging)return; var ns=baseline-Math.round((e.clientY-startY)/34); if(ns!==state[idx]){state[idx]=ns;draw(idx);} });
+    function end(e){ if(!dragging)return; dragging=false; try{r.releasePointerCapture(e.pointerId);}catch(_){}
+      if(!spun){spun=true;reels.forEach(function(x){x.classList.add("hint");});} if(isWin()) win(); }
+    r.addEventListener("pointerup",end); r.addEventListener("pointercancel",end);
+  });
+  document.getElementById("nameForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var p=document.getElementById("pseudo").value.trim()||"anon", st=document.getElementById("sendStatus");
+    if(sendResult(p,"jackpot")){ st.className="status ok"; st.textContent="Envoyé ! Regarde le classement projeté 👀"; document.getElementById("sendBtn").disabled=true; }
+    else { st.className="status err"; st.textContent="Classement hors-ligne (Firebase non configuré)."; }
+  });
+  document.getElementById("again").addEventListener("click",function(){
+    document.getElementById("jackpot").hidden=true; locked=false; reels.forEach(function(r){r.classList.remove("flash");});
+    state=[0,2,4]; drawAll(); hint.innerHTML="Truqué, évidemment. <b>Et si c'était toi qui tenais les rouleaux&nbsp;?</b>";
+    var st=document.getElementById("sendStatus"); st.textContent=""; st.className="status";
+  });
+  drawAll();
+  function confetti(){ if(reduce)return;
+    var cv=document.getElementById("cfx"); cv.hidden=false; var ctx=cv.getContext("2d"),W=cv.width=innerWidth,H=cv.height=innerHeight;
+    var cols=["#ff2d78","#22d3ee","#ffce3a","#4ade80","#fff"],P=[];
+    for(var i=0;i<140;i++)P.push({x:Math.random()*W,y:-20-Math.random()*H*.4,r:4+Math.random()*5,c:cols[i%cols.length],vy:3+Math.random()*4,vx:-2+Math.random()*4,rot:Math.random()*6,vr:-.2+Math.random()*.4});
+    var t0=performance.now();
+    (function loop(now){ ctx.clearRect(0,0,W,H);var alive=false;
+      P.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.rot+=p.vr;if(p.y<H+20)alive=true;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);ctx.restore();});
+      if(now-t0<4200&&alive)requestAnimationFrame(loop); else{ctx.clearRect(0,0,W,H);cv.hidden=true;} })(t0);
+  }
+  // QR présentateur (encode l'URL de CETTE page)
+  var qrOverlay=document.getElementById("qrOverlay");
+  document.getElementById("qrBtn").addEventListener("click",function(){
+    var url=location.href.split("#")[0], box=document.getElementById("qrbox"); box.innerHTML="";
+    document.getElementById("qrurl").textContent=url;
+    function mk(){ try{ new QRCode(box,{text:url,width:208,height:208,colorDark:"#0c0712",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); }catch(_){ box.textContent="QR indisponible"; } }
+    if(window.QRCode) mk();
+    else{ var s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"; s.onload=mk; document.head.appendChild(s); }
+    qrOverlay.hidden=false;
+  });
+  document.getElementById("qrClose").addEventListener("click",function(){qrOverlay.hidden=true;});
+  qrOverlay.addEventListener("click",function(e){if(e.target===qrOverlay)qrOverlay.hidden=true;});
+})();
+</script>
+</body>
+</html>

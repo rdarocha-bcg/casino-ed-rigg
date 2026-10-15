@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Classement — Casino d'Ed Rigg</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#0c0712;--bg2:#150d20;--panel:#1c1130;--panel-edge:#3a2460;
+    --fg:#f6ecff;--muted:#a88fc9;--neon:#ff2d78;--neon-2:#22d3ee;--gold:#ffce3a;
+    color-scheme:dark;
+    --fdisp:"Bungee","Arial Black",system-ui,sans-serif;--fbody:"Rubik",system-ui,sans-serif;--fmono:"DM Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:radial-gradient(120% 80% at 50% -10%,#2a0f3f 0%,var(--bg2) 45%,var(--bg) 100%);color:var(--fg);font-family:var(--fbody);
+    padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+  .board{min-height:100%;display:flex;flex-direction:column;padding:26px 18px 22px;max-width:760px;margin:0 auto}
+  .tag{text-align:center;font-family:var(--fmono);letter-spacing:.32em;text-transform:uppercase;color:var(--neon-2);font-size:.82rem}
+  h1{font-family:var(--fdisp);font-size:clamp(1.7rem,6vw,3.2rem);margin:6px 0 2px;text-align:center;color:#fff;text-shadow:0 0 8px var(--neon),0 0 30px #ff2d7855}
+  .meta{text-align:center;color:var(--muted);font-family:var(--fmono);font-size:.82rem;margin-bottom:16px}
+  .rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;align-items:center;gap:14px;background:#180e28;border:1px solid var(--panel-edge);border-radius:14px;padding:13px 16px;animation:pop .35s ease}
+  @keyframes pop{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+  .rank{font-family:var(--fdisp);font-size:1.25rem;color:var(--muted);min-width:1.7em;text-align:center;font-variant-numeric:tabular-nums}
+  .who{flex:1;min-width:0;font-weight:600;font-size:1.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .badge{font-family:var(--fmono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 11px;border-radius:999px;white-space:nowrap}
+  .badge.j{background:#3a2a00;color:var(--gold);border:1px solid #6a4e00}
+  .row.super{border-color:#ffce3a;box-shadow:0 0 0 1px #ffce3a55,0 0 22px #ff2d7833;background:linear-gradient(90deg,#241036,#2a1a06)}
+  .badge.s{background:linear-gradient(90deg,var(--neon),var(--gold));background-size:200% 100%;color:#140010;border:0;font-weight:600;animation:shine 1.6s linear infinite}
+  @keyframes shine{to{background-position:200% 0}}
+  .row.house{border-color:#ff2d78;background:linear-gradient(90deg,#2a0d20,#241206);box-shadow:0 0 0 1px #ff2d7855,0 0 26px #ff2d7833}
+  .badge.h{background:#2a0d20;color:#ff7aa8;border:1px solid #ff2d7866}
+  .empty{text-align:center;color:var(--muted);margin-top:28px;line-height:1.6}
+  .legend{margin-top:auto;padding-top:18px;text-align:center;color:var(--muted);font-size:.8rem;line-height:1.7}
+  .legend b{color:var(--gold)}
+  @media (prefers-reduced-motion:reduce){.row,.badge.s{animation:none}}
+</style>
+</head>
+<body>
+<div class="board">
+  <div class="tag">Hack the Casino</div>
+  <h1>Classement du casino</h1>
+  <div class="meta" id="meta">connexion au casino…</div>
+  <ul class="rows" id="rows"></ul>
+  <div class="empty" id="empty" hidden>En attente des premiers à truquer la machine… 🎰</div>
+  <div class="legend">
+    <span class="badge j">Jackpot</span> gagné honnêtement ·
+    <span class="badge s">Super Jackpot</span> = <b>a triché</b> (et on adore) ·
+    <span class="badge h">La Maison</span> = Ed Rigg, à détrôner
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+  "use strict";
+  var rowsEl=document.getElementById("rows"), metaEl=document.getElementById("meta"), emptyEl=document.getElementById("empty");
+
+  // Ed Rigg : Super Jackpot permanent, en tête (La Maison a déjà triché).
+  var HOUSE={ pseudo:"Ed Rigg", type:"super jackpot", at:0, house:true };
+
+  var DB=null;
+  try{ firebase.initializeApp(window.FIREBASE_CONFIG); DB=firebase.database(); }
+  catch(e){ metaEl.textContent="Firebase non configuré — voir firebase-config.js"; }
+
+  function render(list){
+    // dedup par pseudo : on garde la 1re victoire ; super jackpot l'emporte sur jackpot
+    var by={};
+    list.forEach(function(e){
+      var k=e.pseudo.toLowerCase();
+      if(!by[k]) by[k]={pseudo:e.pseudo,type:e.type,at:e.at,house:!!e.house};
+      else{ if(e.at<by[k].at) by[k].at=e.at; if(e.type==="super jackpot") by[k].type="super jackpot"; }
+    });
+    var players=Object.keys(by).map(function(k){return by[k];});
+    players.sort(function(a,b){ return a.at-b.at; });
+
+    var cracked=players.filter(function(p){return !p.house;}).length;
+    metaEl.textContent = cracked+" joueur"+(cracked>1?"s":"")+" ont cracké la machine · Ed Rigg garde la main 🎩";
+    emptyEl.hidden = cracked>0;
+
+    rowsEl.innerHTML="";
+    players.forEach(function(pl,i){
+      var li=document.createElement("li");
+      li.className="row"+(pl.house?" house":(pl.type==="super jackpot"?" super":""));
+      var rank=document.createElement("span"); rank.className="rank";
+      rank.textContent = pl.house?"👑":(i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1));
+      var who=document.createElement("span"); who.className="who"; who.textContent=pl.pseudo; // textContent = anti-injection
+      var b=document.createElement("span");
+      if(pl.house){ b.className="badge h"; b.textContent="🎩 La Maison"; }
+      else if(pl.type==="super jackpot"){ b.className="badge s"; b.textContent="🃏 Super Jackpot"; }
+      else { b.className="badge j"; b.textContent="Jackpot"; }
+      li.appendChild(rank); li.appendChild(who); li.appendChild(b);
+      rowsEl.appendChild(li);
+    });
+  }
+
+  render([HOUSE]); // affiche Ed Rigg d'emblée, même avant connexion
+
+  if(DB){
+    DB.ref("jackpots").limitToLast(100).on("value", function(snap){
+      var list=[HOUSE]; snap.forEach(function(c){ var v=c.val()||{};
+        if(v && v.pseudo) list.push({pseudo:String(v.pseudo).slice(0,24),type:(v.type==="super jackpot"?"super jackpot":"jackpot"),at:+v.at||Date.now()}); });
+      render(list);
+    }, function(err){ metaEl.textContent="connexion perdue — "+(err&&err.code||"erreur"); });
+  }
+})();
+</script>
+</body>
+</html>
