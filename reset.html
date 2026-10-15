@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Reset — Ed Rigg's Casino</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root{color-scheme:dark;--neon-2:#22d3ee;--muted:#a88fc9;--bg:#0c0712;--bg2:#150d20}
+  html,body{height:100%;margin:0}
+  body{background:radial-gradient(120% 80% at 50% -10%,#2a0f3f 0%,var(--bg2) 45%,var(--bg) 100%);
+    color:#f6ecff;font-family:"DM Mono",ui-monospace,monospace;display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:24px}
+  .box{max-width:22rem}
+  .spin{font-size:2.4rem;animation:rot 1s linear infinite;display:inline-block}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  h1{font-family:"Bungee","Arial Black",sans-serif;font-size:1.3rem;color:var(--neon-2);margin:14px 0 6px;letter-spacing:.04em}
+  p{color:var(--muted);font-size:.86rem;line-height:1.5}
+  a{color:var(--neon-2)}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="spin">🎰</div>
+  <h1>Resetting the casino…</h1>
+  <p id="msg">Wiping the leaderboard, then taking you to the board.</p>
+  <p><a href="board.html">Go to the leaderboard now →</a></p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+  "use strict";
+  var go=function(){ location.replace("board.html"); };
+  var done=false, finish=function(){ if(done)return; done=true; go(); };
+  try{
+    firebase.initializeApp(window.FIREBASE_CONFIG);
+    firebase.database().ref("jackpots").remove().then(finish, finish);
+  }catch(e){ finish(); }
+  setTimeout(finish, 2500); // filet de sécurité
+})();
+</script>
+</body>
+</html>
